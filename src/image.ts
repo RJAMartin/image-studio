@@ -1,4 +1,133 @@
-export type Options={format:'image/jpeg'|'image/png'|'image/webp';quality:number;width:number;crop:'original'|'square'|'landscape'|'wide'};
-export function geometry(width:number,height:number,maxWidth:number,crop:Options['crop']){const ratio=crop==='square'?1:crop==='landscape'?4/3:crop==='wide'?16/9:width/height;let sw=width,sh=height;if(width/height>ratio)sw=height*ratio;else sh=width/ratio;const scale=Math.min(1,Math.max(1,maxWidth)/sw);return {sx:(width-sw)/2,sy:(height-sh)/2,sw,sh,width:Math.max(1,Math.round(sw*scale)),height:Math.max(1,Math.round(sh*scale))}}
-export async function convert(file:File,options:Options){const bitmap=await createImageBitmap(file);try{if(bitmap.width*bitmap.height>40_000_000)throw new Error('This image is too large. Use an image below 40 megapixels.');const g=geometry(bitmap.width,bitmap.height,options.width,options.crop);const canvas=document.createElement('canvas');canvas.width=g.width;canvas.height=g.height;const ctx=canvas.getContext('2d')!;if(options.format==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,g.width,g.height)}ctx.drawImage(bitmap,g.sx,g.sy,g.sw,g.sh,0,0,g.width,g.height);const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('Could not encode this image.')),options.format,options.quality/100));if(blob.type!==options.format)throw new Error('Your browser does not support exporting this format. Try PNG or JPEG.');return {blob,width:g.width,height:g.height}}finally{bitmap.close()}}
-export async function sample(){const c=document.createElement('canvas');c.width=1800;c.height=1200;const x=c.getContext('2d')!;x.fillStyle='#dbded0';x.fillRect(0,0,1800,1200);x.fillStyle='#e9b78c';x.beginPath();x.arc(1270,320,125,0,Math.PI*2);x.fill();for(const [color,pts]of [['#9da99a',[[0,870],[410,270],[860,940],[1370,490],[1800,850],[1800,1200],[0,1200]]],['#657d70',[[0,980],[370,680],[840,1080],[1310,740],[1800,1050],[1800,1200],[0,1200]]],['#304e43',[[0,1100],[700,930],[1190,1150],[1800,870],[1800,1200],[0,1200]]]] as [string,number[][]][]){x.fillStyle=color;x.beginPath();pts.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.closePath();x.fill()}return new File([await new Promise<Blob>(r=>c.toBlob(b=>r(b!),'image/png'))],'quiet-mountains.png',{type:'image/png'})}
+export type Options = {
+  format: 'image/jpeg' | 'image/png' | 'image/webp';
+  quality: number;
+  width: number;
+  crop: 'original' | 'square' | 'landscape' | 'wide';
+};
+export function geometry(
+  width: number,
+  height: number,
+  maxWidth: number,
+  crop: Options['crop'],
+) {
+  const ratio =
+    crop === 'square'
+      ? 1
+      : crop === 'landscape'
+        ? 4 / 3
+        : crop === 'wide'
+          ? 16 / 9
+          : width / height;
+  let sw = width,
+    sh = height;
+  if (width / height > ratio) sw = height * ratio;
+  else sh = width / ratio;
+  const scale = Math.min(1, Math.max(1, maxWidth) / sw);
+  return {
+    sx: (width - sw) / 2,
+    sy: (height - sh) / 2,
+    sw,
+    sh,
+    width: Math.max(1, Math.round(sw * scale)),
+    height: Math.max(1, Math.round(sh * scale)),
+  };
+}
+export async function convert(file: File, options: Options) {
+  const bitmap = await createImageBitmap(file);
+  try {
+    if (bitmap.width * bitmap.height > 40_000_000)
+      throw new Error(
+        'This image is too large. Use an image below 40 megapixels.',
+      );
+    const g = geometry(
+      bitmap.width,
+      bitmap.height,
+      options.width,
+      options.crop,
+    );
+    const canvas = document.createElement('canvas');
+    canvas.width = g.width;
+    canvas.height = g.height;
+    const ctx = canvas.getContext('2d')!;
+    if (options.format === 'image/jpeg') {
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, g.width, g.height);
+    }
+    ctx.drawImage(bitmap, g.sx, g.sy, g.sw, g.sh, 0, 0, g.width, g.height);
+    const blob = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (b) =>
+          b ? resolve(b) : reject(new Error('Could not encode this image.')),
+        options.format,
+        options.quality / 100,
+      ),
+    );
+    if (blob.type !== options.format)
+      throw new Error(
+        'Your browser does not support exporting this format. Try PNG or JPEG.',
+      );
+    return { blob, width: g.width, height: g.height };
+  } finally {
+    bitmap.close();
+  }
+}
+export async function sample() {
+  const c = document.createElement('canvas');
+  c.width = 1800;
+  c.height = 1200;
+  const x = c.getContext('2d')!;
+  x.fillStyle = '#dbded0';
+  x.fillRect(0, 0, 1800, 1200);
+  x.fillStyle = '#e9b78c';
+  x.beginPath();
+  x.arc(1270, 320, 125, 0, Math.PI * 2);
+  x.fill();
+  for (const [color, pts] of [
+    [
+      '#9da99a',
+      [
+        [0, 870],
+        [410, 270],
+        [860, 940],
+        [1370, 490],
+        [1800, 850],
+        [1800, 1200],
+        [0, 1200],
+      ],
+    ],
+    [
+      '#657d70',
+      [
+        [0, 980],
+        [370, 680],
+        [840, 1080],
+        [1310, 740],
+        [1800, 1050],
+        [1800, 1200],
+        [0, 1200],
+      ],
+    ],
+    [
+      '#304e43',
+      [
+        [0, 1100],
+        [700, 930],
+        [1190, 1150],
+        [1800, 870],
+        [1800, 1200],
+        [0, 1200],
+      ],
+    ],
+  ] as [string, number[][]][]) {
+    x.fillStyle = color;
+    x.beginPath();
+    pts.forEach(([a, b], i) => (i ? x.lineTo(a, b) : x.moveTo(a, b)));
+    x.closePath();
+    x.fill();
+  }
+  return new File(
+    [await new Promise<Blob>((r) => c.toBlob((b) => r(b!), 'image/png'))],
+    'quiet-mountains.png',
+    { type: 'image/png' },
+  );
+}
